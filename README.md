@@ -1,7 +1,7 @@
-# behavioral-cloning
+# Behavioral Cloning
 
 
-# Model Architecture
+## Model Architecture
 
     ____________________________________________________________________________________________________
     Layer (type)                     Output Shape          Param #     Connected to                     
@@ -54,12 +54,24 @@
     ____________________________________________________________________________________________________
 
 
-# Normalization
-* Image converted to YUV representation
+
+## Normalization
+* Input image is assumed to be RGB
 * Crop 1/5th off top and 25px off bottom
+* Image converted to YCbCr color space
+* Scaled down to 200x66
 * Pixel values converted from uint8 (0 - 255) range to float32 (-1.0 to +1.0) range
 
-# Data Augmentation
+
+## Training data pre-processing
+* Majority of the training data contains steering angles that are close to 0. To reduce the disparity, 75% of the rows with low steering values are removed.
+* Round steering values to 2 decimal places. Each steering angle is one of 200 values in range -1 to +1 (steps of 0.01)
+So problem is simplified and could even be treated as a classification problem with 200 classes.
+* Training data is shuffled after each epoch
+* 
+
+
+### Data Augmentation
 
  NumSamples: 74992, Shape:(1, 66, 200, 3)
 
@@ -155,6 +167,11 @@ Right image brightened:
 ![png](readme/output_1_17.png)
 
 <hr>
+
+## Live Trainer
+
+
+
 
 
 
