@@ -102,7 +102,7 @@ def genAugmentedViews(src):
 
 # shift image horizontally by a random number of pixels and proportionally adjust steering angle
 # axis 1 for horizontal, 0 for vertical
-def addShift(img, steering, axis = 1):
+def addShift(img, steering, axis):
      
     # pick random shift amount between -1/5th width to +1/5th width
     amt = int(np.random.randint(-img.shape[axis]//5,img.shape[axis]//5+1))
@@ -201,7 +201,7 @@ def cropImage(img):
 # convert to y,u,v or gray (keep only y)
 # crop to remove top 5th and bottom 5th of image
 # keras requires 4d-tensor input: add dimension 1, h,w,d for image data
-def normalizeImage(img, gray=False):
+def normalizeImage(img, gray):
     croppedImg = cropImage(img)
     resizedImg = cv2.resize(croppedImg, (200,66), interpolation = cv2.INTER_CUBIC)
     if gray:
@@ -278,11 +278,11 @@ if __name__ == '__main__':
     parser.add_argument('-g', dest='gray', help='Convert images to grayscale', action='store_true')
     parser.add_argument('-v', dest='validation', help='Separate data into train and validation', action='store_true')
     parser.add_argument('-d', dest='dropout', help='Use dropouts', action='store_true')
-    parser.add_argument('-p', dest='print', help='Display augmented samples', action='store_true')
+    parser.add_argument('-p', dest='plot', help='Display augmented samples', action='store_true')
     args = parser.parse_args()
     
     # Get file path to model
-    model_file = os.join(DATA_DIR, args.model)
+    model_file = os.path.join(DATA_DIR, args.model)
     if not model_file.endswith('.h5'):
         model_file += '.h5'
     
@@ -304,7 +304,7 @@ if __name__ == '__main__':
         sampleIdx += 1
 
     # wrap selected row with data augmentation generators
-    imageGenerator = genNormalizedData(genAugmentedViews([train[sampleIdx]]))
+    imageGenerator = genNormalizedData(genAugmentedViews([train[sampleIdx]]), args.gray)
     imgListExample = list(imageGenerator)
     numImagesPerSample = len(imgListExample)
     numRows = len(train) * numImagesPerSample
@@ -314,7 +314,7 @@ if __name__ == '__main__':
     image_shape = exampleImg.shape
     print("NumSamples: {0}, Shape:{1}".format(numRows, image_shape))
 
-    if args.display:
+    if args.plot:
         # Visualization of selected - to ensure augmented images are correct
         for normImg,normSteering in imgListExample:
             plt.figure()
@@ -348,7 +348,7 @@ if __name__ == '__main__':
     else:
         history = model.fit_generator(genTrainingData(train, args.gray), samples_per_epoch=numRows, 
                       nb_epoch=25, verbose=1, max_q_size=256, pickle_safe=True, nb_worker=32,
-                      validation_data=genNormalizedData(genValidationData(val)), nb_val_samples=len(val))
+                      validation_data=genNormalizedData(genValidationData(val), args.gray), nb_val_samples=len(val))
 
     # Save weights and model json file
     model.save(model_file)
