@@ -47,7 +47,7 @@ def predict(sid, imgString):
     global model
     image = Image.open(BytesIO(base64.b64decode(imgString)))
     image_array = np.asarray(image)
-    normImg = normalizeImage(image_array)
+    normImg = normalizeImage(image_array, grayscale)
     steering_angle = float(model.predict(normImg, batch_size=1))
     return steering_angle
 
@@ -56,7 +56,7 @@ def update(sid, imgString, steering):
     global model, imgCache, steeringCache
     image = Image.open(BytesIO(base64.b64decode(imgString)))
     image = np.asarray(image)
-    normalizedImage = normalizeImage(image)
+    normalizedImage = normalizeImage(image, grayscale)
     normalizedImage = normalizedImage.reshape(normalizedImage.shape[1:])
     
     if len(steeringCache) >= 10:
