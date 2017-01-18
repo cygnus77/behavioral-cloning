@@ -3,8 +3,10 @@ Model
 """
 import os
 import csv
+import pickle
 import math
 import argparse
+import itertools
 import numpy as np
 import cv2
 import json
@@ -230,12 +232,12 @@ def nvidia_model(input_shape, use_dropout = True):
     model.add(Convolution2D(24, 5, 5, subsample=(2,2), border_mode='same', init='he_normal'))
     model.add(ELU())
     if use_dropout:
-        model.add(Dropout(0.1))
+        model.add(Dropout(0.05))
     
     model.add(Convolution2D(36, 5, 5, subsample=(2,2), border_mode='same', init='he_normal'))
     model.add(ELU())
     if use_dropout:
-        model.add(Dropout(0.25))
+        model.add(Dropout(0.1))
     
     model.add(Convolution2D(48, 5, 5, subsample=(2,2), border_mode='same', init='he_normal'))
     model.add(ELU())
@@ -245,7 +247,7 @@ def nvidia_model(input_shape, use_dropout = True):
     model.add(Convolution2D(64, 3, 3, subsample=(2,2), border_mode='same', init='he_normal'))
     model.add(ELU())
     if use_dropout:
-        model.add(Dropout(0.5))
+        model.add(Dropout(0.25))
     
     model.add(Convolution2D(64, 3, 3, subsample=(2,2), border_mode='same', init='he_normal'))
     model.add(ELU())
@@ -257,12 +259,12 @@ def nvidia_model(input_shape, use_dropout = True):
     model.add(Dense(100, init='he_normal'))
     model.add(ELU())
     if use_dropout:
-        model.add(Dropout(0.5))
+        model.add(Dropout(0.25))
     
     model.add(Dense(50, init='he_normal'))
     model.add(ELU())
     if use_dropout:
-        model.add(Dropout(0.25))
+        model.add(Dropout(0.1))
     
     model.add(Dense(10, init='he_normal'))
     model.add(ELU())
@@ -271,18 +273,30 @@ def nvidia_model(input_shape, use_dropout = True):
     
     return model
 
+def genPrepData(prep_file_list):
+    while True:
+        for fname in shuffle(prep_file_list):
+            with open(os.path.join(prep_folder, fname), 'rb') as f:
+                try:
+                    while True:
+                        yield pickle.load(f)
+                except EOFError:
+                    pass
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Train NVIDIA Model on Udacity data')
     parser.add_argument('model', help='file name where model is stored. Extension must be .h5, will be added if not provided')
+    parser.add_argument('epochs', help='Number of epoch', type=int)
     parser.add_argument('-g', dest='gray', help='Convert images to grayscale', action='store_true')
     parser.add_argument('-v', dest='validation', help='Separate data into train and validation', action='store_true')
     parser.add_argument('-d', dest='dropout', help='Use dropouts', action='store_true')
-    parser.add_argument('-p', dest='plot', help='Display augmented samples', action='store_true')
+    parser.add_argument('-plot', dest='plot', help='Display augmented samples', action='store_true')
+    parser.add_argument('-prep', dest='prep', help='Preprocessed images folder. If omitted, images will be generated on the fly.')
     args = parser.parse_args()
     
     # Get file path to model
-    model_file = os.path.join(DATA_DIR, args.model)
+    model_file = args.model
     if not model_file.endswith('.h5'):
         model_file += '.h5'
     
@@ -312,7 +326,7 @@ if __name__ == '__main__':
 
     # get image dimensions
     image_shape = exampleImg.shape
-    print("NumSamples: {0}, Shape:{1}".format(numRows, image_shape))
+    print("NumImagesPerSample: {0}, NumSamples: {1}, Shape:{2}".format(numImagesPerSample, numRows, image_shape))
 
     if args.plot:
         # Visualization of selected - to ensure augmented images are correct
@@ -342,14 +356,23 @@ if __name__ == '__main__':
     # Train
     optimizer = Adam(lr=0.0001)
     model.compile(loss='mean_squared_error', optimizer=optimizer)
-    if val == None:
-        history = model.fit_generator(genTrainingData(train, args.gray), samples_per_epoch=numRows, 
-                      nb_epoch=25, verbose=1, max_q_size=256, pickle_safe=True, nb_worker=32)
+    
+    if args.prep == None:
+        generator = genTrainingData(train, args.gray)
     else:
-        history = model.fit_generator(genTrainingData(train, args.gray), samples_per_epoch=numRows, 
-                      nb_epoch=25, verbose=1, max_q_size=256, pickle_safe=True, nb_worker=32,
-                      validation_data=genNormalizedData(genValidationData(val), args.gray), nb_val_samples=len(val))
+        print("Using pre-processed data")
+        generator = genPrepData(list(os.listdir(prep_folder)))
+        args.validation = False
 
+    if args.validation:
+        history = model.fit_generator(generator, samples_per_epoch=numRows, 
+                                      nb_epoch=args.epochs, verbose=1, pickle_safe=True,
+                                      validation_data=genNormalizedData(genValidationData(val), args.gray), 
+                                      nb_val_samples=len(val))
+    else:
+        history = model.fit_generator(generator, samples_per_epoch=numRows, 
+                                      nb_epoch=args.epochs, verbose=1, pickle_safe=True)
+        
     # Save weights and model json file
     model.save(model_file)
     jsonStr = model.to_json()
