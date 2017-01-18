@@ -2,6 +2,7 @@
 Model
 """
 import os
+import threading
 import csv
 import pickle
 import math
@@ -22,12 +23,18 @@ import matplotlib.pyplot as plt
 
 DATA_DIR = 'data/'
 LABELS_FILENAME = os.path.join(DATA_DIR,'driving_log.csv')
+datalock = threading.Lock()
+NUM_THREADS = 8
 
 """
 Functions for training
 """
 # generate training data in an infinite loop - passed into keras fit_generator
-def genTrainingData(data, gray):
+def genTrainingData(dataSrc, gray, part_size):
+    datalock.acquire()
+    data = list(itertools.islice(dataSrc, part_size))
+    print("Generator data size: %d" % len(data))
+    datalock.release()
     while True:
         data = shuffle(data)
         src = genNormalizedData(genAugmentedViews(data), gray)
@@ -326,7 +333,7 @@ if __name__ == '__main__':
 
     # get image dimensions
     image_shape = exampleImg.shape
-    print("NumImagesPerSample: {0}, NumSamples: {1}, Shape:{2}".format(numImagesPerSample, numRows, image_shape))
+    print("No. Original Images: {0} No. Augmented Images Per Original: {1}, Total Samples: {2}, Shape of sample:{3}".format(len(train), numImagesPerSample, numRows, image_shape))
 
     if args.plot:
         # Visualization of selected - to ensure augmented images are correct
@@ -358,7 +365,8 @@ if __name__ == '__main__':
     model.compile(loss='mean_squared_error', optimizer=optimizer)
     
     if args.prep == None:
-        generator = genTrainingData(train, args.gray)
+        print("Augmenting data on the fly")
+        generator = genTrainingData(itertools.chain(train), args.gray, (len(train) + NUM_THREADS - 1) // NUM_THREADS)
     else:
         print("Using pre-processed data")
         generator = genPrepData(list(os.listdir(prep_folder)))
@@ -366,12 +374,12 @@ if __name__ == '__main__':
 
     if args.validation:
         history = model.fit_generator(generator, samples_per_epoch=numRows, 
-                                      nb_epoch=args.epochs, verbose=1, pickle_safe=True,
+                                      nb_epoch=args.epochs, verbose=1, pickle_safe=True, max_q_size=8000, nb_worker=NUM_THREADS,
                                       validation_data=genNormalizedData(genValidationData(val), args.gray), 
                                       nb_val_samples=len(val))
     else:
         history = model.fit_generator(generator, samples_per_epoch=numRows, 
-                                      nb_epoch=args.epochs, verbose=1, pickle_safe=True)
+                                      nb_epoch=args.epochs, verbose=1, pickle_safe=True, max_q_size=8000, nb_worker=NUM_THREADS)
         
     # Save weights and model json file
     model.save(model_file)
