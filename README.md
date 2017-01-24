@@ -130,7 +130,17 @@ After implementing a model that matched NVIDIA team's description (layers and nu
 
 <hr>
 
+###### Combination of shift and shadows
+* To vary the shadows further, we combine shifting and shadow generation resulting in 18 more images
 
+|Source |Shadow 1 + Vertical|Shadow 1 + Horizontal|Shadow 1 + Flip|Shadow 2 + Vertical|Shadow 2 + Horizontal|Shadow 2 + Flip|
+|-------|-------------------|---------------------|---------------|-------------------|---------------------|---------------|
+|Center camera|![png](output_2_29.png =100x)|![png](output_2_30.png =100x)|![png](output_2_31.png =100x)|![png](output_2_32.png =100x)|![png](output_2_33.png =100x)|![png](output_2_34.png =100x)|
+|Left camera|![png](output_2_35.png =100x)|![png](output_2_36.png =100x)|![png](output_2_37.png =100x)|![png](output_2_38.png =100x)|![png](output_2_39.png =100x)|![png](output_2_40.png =100x)|
+|Right camera|![png](output_2_41.png =100x)|![png](output_2_42.png =100x)|![png](output_2_43.png =100x)|![png](output_2_44.png =100x)|![png](output_2_45.png =100x)|![png](output_2_46.png =100x)|
+
+
+<hr>
 
 ## Training
 * Multi-process system to augment data in parallel to training on GPU.
