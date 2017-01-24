@@ -2,7 +2,7 @@
 Model
 """
 import os
-import threading
+from multiprocessing import Queue
 import csv
 import pickle
 import math
@@ -23,18 +23,17 @@ import matplotlib.pyplot as plt
 
 DATA_DIR = 'data/'
 LABELS_FILENAME = os.path.join(DATA_DIR,'driving_log.csv')
-datalock = threading.Lock()
 NUM_THREADS = 8
+dataQueue = Queue()
+
 
 """
 Functions for training
 """
 # generate training data in an infinite loop - passed into keras fit_generator
-def genTrainingData(dataSrc, gray, part_size):
-    datalock.acquire()
-    data = list(itertools.islice(dataSrc, part_size))
+def genTrainingData(gray):
+    data = dataQueue.get()
     print("Generator data size: %d" % len(data))
-    datalock.release()
     while True:
         data = shuffle(data)
         src = genNormalizedData(genAugmentedViews(data), gray)
@@ -74,7 +73,7 @@ def genDimmerViews(src):
 def genShiftedViews(src):
     for img, steering in src:
         # add random shifts
-        yield addShift(img, steering, axis=0)
+        #yield addShift(img, steering, axis=0)
         yield addShift(img, steering, axis=1)
         # flip center camera image
         yield (cv2.flip(img, 1), steering * -1.)
@@ -92,8 +91,8 @@ def genAugmentedViews(src):
         imgSrcArr.append( (center, steering) )
 
         # adjust steering for left and right cameras
-        left_steer = np.clip(steering + 0.12, -1, 1)
-        right_steer = np.clip(steering - 0.12, -1, 1)
+        left_steer = np.clip(steering + 0.1, -1, 1)
+        right_steer = np.clip(steering - 0.1, -1, 1)
         imgSrcArr.append( (left, left_steer) )
         imgSrcArr.append( (right, right_steer) )
 
@@ -105,8 +104,8 @@ def genAugmentedViews(src):
             yield txItem
         for txItem in genShadowsOnView(imgSrcArr):
             yield txItem
-        for txItem in genShadowsOnView(genShiftedViews(imgSrcArr)):
-            yield txItem
+        #for txItem in genShadowsOnView(genShiftedViews(imgSrcArr)):
+        #    yield txItem
         
 
 # shift image horizontally by a random number of pixels and proportionally adjust steering angle
@@ -155,7 +154,7 @@ def addShadow(img):
     for j in range(mask.shape[0]):
         for i in range(mask.shape[1]):
             if j > (i*slope)+intercept:
-                mask[j,i] -= np.random.randint(30,180)
+                mask[j,i] -= np.random.randint(60,120)
     # apply mask
     y += mask
     # ensure values are within uint8 range to avoid artifacts
@@ -217,8 +216,7 @@ def normalizeImage(img, gray):
         yuvImg = convColorSpace2Gray(resizedImg)
     else:
         yuvImg = convColorSpace2YUV(resizedImg)
-    x = yuvImg.reshape(1,*yuvImg.shape).astype(np.float32)
-    return x
+    return yuvImg.reshape(1,*yuvImg.shape).astype(np.float32)
 
 # de-normalize image data to RGB format for display
 def imgForDisplay(img):
@@ -239,24 +237,24 @@ def nvidia_model(input_shape, use_dropout = True):
     model.add(Convolution2D(24, 5, 5, subsample=(2,2), border_mode='same', init='he_normal'))
     model.add(ELU())
     if use_dropout:
-        model.add(Dropout(0.05))
+        model.add(Dropout(0.25))
     
     model.add(Convolution2D(36, 5, 5, subsample=(2,2), border_mode='same', init='he_normal'))
     model.add(ELU())
     if use_dropout:
-        model.add(Dropout(0.1))
-    
-    model.add(Convolution2D(48, 5, 5, subsample=(2,2), border_mode='same', init='he_normal'))
-    model.add(ELU())
-    if use_dropout:
         model.add(Dropout(0.25))
     
-    model.add(Convolution2D(64, 3, 3, subsample=(2,2), border_mode='same', init='he_normal'))
+    model.add(Convolution2D(48, 5, 5, subsample=(2,2), border_mode='valid', init='he_normal'))
     model.add(ELU())
     if use_dropout:
-        model.add(Dropout(0.25))
+        model.add(Dropout(0.5))
     
-    model.add(Convolution2D(64, 3, 3, subsample=(2,2), border_mode='same', init='he_normal'))
+    model.add(Convolution2D(64, 3, 3, subsample=(1,1), border_mode='valid', init='he_normal'))
+    model.add(ELU())
+    if use_dropout:
+        model.add(Dropout(0.5))
+    
+    model.add(Convolution2D(64, 3, 3, subsample=(1,1), border_mode='valid', init='he_normal'))
     model.add(ELU())
     if use_dropout:
         model.add(Dropout(0.5))
@@ -266,12 +264,12 @@ def nvidia_model(input_shape, use_dropout = True):
     model.add(Dense(100, init='he_normal'))
     model.add(ELU())
     if use_dropout:
-        model.add(Dropout(0.25))
+        model.add(Dropout(0.5))
     
     model.add(Dense(50, init='he_normal'))
     model.add(ELU())
     if use_dropout:
-        model.add(Dropout(0.1))
+        model.add(Dropout(0.5))
     
     model.add(Dense(10, init='he_normal'))
     model.add(ELU())
@@ -366,7 +364,11 @@ if __name__ == '__main__':
     
     if args.prep == None:
         print("Augmenting data on the fly")
-        generator = genTrainingData(itertools.chain(train), args.gray, (len(train) + NUM_THREADS - 1) // NUM_THREADS)
+        set_size = (len(train) + NUM_THREADS - 1) // NUM_THREADS
+        print("Data allocated to each generator: %d rows" % set_size)
+        for s in range(0, len(train), set_size):
+            dataQueue.put(train[s:s+set_size])
+        generator = genTrainingData(args.gray)
     else:
         print("Using pre-processed data")
         generator = genPrepData(list(os.listdir(prep_folder)))
@@ -374,12 +376,12 @@ if __name__ == '__main__':
 
     if args.validation:
         history = model.fit_generator(generator, samples_per_epoch=numRows, 
-                                      nb_epoch=args.epochs, verbose=1, pickle_safe=True, max_q_size=8000, nb_worker=NUM_THREADS,
+                                      nb_epoch=args.epochs, verbose=1, pickle_safe=True, max_q_size=3000, nb_worker=NUM_THREADS,
                                       validation_data=genNormalizedData(genValidationData(val), args.gray), 
                                       nb_val_samples=len(val))
     else:
         history = model.fit_generator(generator, samples_per_epoch=numRows, 
-                                      nb_epoch=args.epochs, verbose=1, pickle_safe=True, max_q_size=8000, nb_worker=NUM_THREADS)
+                                      nb_epoch=args.epochs, verbose=1, pickle_safe=True, max_q_size=3000, nb_worker=NUM_THREADS)
         
     # Save weights and model json file
     model.save(model_file)
