@@ -135,9 +135,9 @@ After implementing a model that matched NVIDIA team's description (layers and nu
 
 |Source |Shadow 1 + Vertical|Shadow 1 + Horizontal|Shadow 1 + Flip|Shadow 2 + Vertical|Shadow 2 + Horizontal|Shadow 2 + Flip|
 |-------|-------------------|---------------------|---------------|-------------------|---------------------|---------------|
-|Center camera|![png](readme/output_2_29.png =100x)|![png](readme/output_2_30.png =100x)|![png](readme/output_2_31.png =100x)|![png](readme/output_2_32.png =100x)|![png](readme/output_2_33.png =100x)|![png](readme/output_2_34.png =100x)|
-|Left camera|![png](readme/output_2_35.png =100x)|![png](readme/output_2_36.png =100x)|![png](readme/output_2_37.png =100x)|![png](readme/output_2_38.png =100x)|![png](readme/output_2_39.png =100x)|![png](readme/output_2_40.png =100x)|
-|Right camera|![png](readme/output_2_41.png =100x)|![png](readme/output_2_42.png =100x)|![png](readme/output_2_43.png =100x)|![png](readme/output_2_44.png =100x)|![png](readme/output_2_45.png =100x)|![png](readme/output_2_46.png =100x)|
+|Center camera|<img src='readme/output_2_29.png' width=100/>|<img src='readme/output_2_30.png' width=100/>|<img src='readme/output_2_31.png' width=100/>|<img src='readme/output_2_32.png' width=100/>|<img src='readme/output_2_33.png' width=100/>|<img src='readme/output_2_34.png' width=100/>|
+|Left camera|<img src='readme/output_2_35.png' width=100/>|<img src='readme/output_2_36.png' width=100/>|<img src='readme/output_2_37.png' width=100/>|<img src='readme/output_2_38.png' width=100/>|<img src='readme/output_2_39.png' width=100/>|<img src='readme/output_2_40.png' width=100/>|
+|Right camera|<img src='readme/output_2_41.png' width=100/>|<img src='readme/output_2_42.png' width=100/>|<img src='readme/output_2_43.png' width=100/>|<img src='readme/output_2_44.png' width=100/>|<img src='readme/output_2_45.png' width=100/>|<img src='readme/output_2_46.png' width=100/>|
 
 
 <hr>
