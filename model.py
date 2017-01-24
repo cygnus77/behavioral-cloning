@@ -63,17 +63,19 @@ def genShadowsOnView(src):
     for img, steering in src:
         # add random shadows to center, right and left cameras
         yield (addShadow(img), steering)
+        yield (addShadow(img), steering)
 
 def genDimmerViews(src):
     for img, steering in src:
         # vary image brightness on each camera - to half and third of the original brightness
         yield (adjustBrightness(img, .75), steering)
-        yield (adjustBrightness(img, 1.25), steering)
+        yield (adjustBrightness(img, .5), steering)
+        yield (adjustBrightness(img, .25), steering)
 
 def genShiftedViews(src):
     for img, steering in src:
         # add random shifts
-        #yield addShift(img, steering, axis=0)
+        yield addShift(img, steering, axis=0)
         yield addShift(img, steering, axis=1)
         # flip center camera image
         yield (cv2.flip(img, 1), steering * -1.)
@@ -104,8 +106,8 @@ def genAugmentedViews(src):
             yield txItem
         for txItem in genShadowsOnView(imgSrcArr):
             yield txItem
-        #for txItem in genShadowsOnView(genShiftedViews(imgSrcArr)):
-        #    yield txItem
+        for txItem in genShadowsOnView(genShiftedViews(imgSrcArr)):
+            yield txItem
         
 
 # shift image horizontally by a random number of pixels and proportionally adjust steering angle
@@ -139,11 +141,13 @@ def addShift(img, steering, axis):
 
 # adds a random shadow to a given image
 def addShadow(img):
+    # pick a random shadow coloration
+    shadow_shade = np.random.randint(60,120)
     # convert image to YUV space to get the luma (brightness) channel
     y,u,v = cv2.split(cv2.cvtColor(img, cv2.COLOR_RGB2YCrCb))
     y = y.astype(np.int32)
     # create mask image with same shape as input image
-    mask = np.zeros(y.shape, dtype=np.int32)
+    #mask = np.zeros(y.shape, dtype=np.int32)
     # compute a random line in slope, intercept form
     # random x1,x2 values (y1=0, y2=height)
     x1 = np.random.uniform() * y.shape[1]
@@ -151,12 +155,12 @@ def addShadow(img):
     slope = float(y.shape[0]) / (x2 - x1)
     intercept = -(slope * x1)
     # assign pixels of mask below line
-    for j in range(mask.shape[0]):
-        for i in range(mask.shape[1]):
+    for j in range(y.shape[0]):
+        for i in range(y.shape[1]):
             if j > (i*slope)+intercept:
-                mask[j,i] -= np.random.randint(60,120)
+                y[j,i] -= shadow_shade
     # apply mask
-    y += mask
+    #y += mask
     # ensure values are within uint8 range to avoid artifacts
     y = np.clip(y, 0,255).astype(np.uint8)
     # convert back to RGB
@@ -227,6 +231,7 @@ def imgForDisplay(img):
     elif img.shape[2] == 1: #grayscale
         img = img.reshape(img.shape[0:2])
     return img
+
 
 # Model based on NVIDIA model
 # Dropouts are not specified in the paper
