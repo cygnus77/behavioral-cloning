@@ -54,29 +54,36 @@ def predict(sid, imgString):
 @sio.on("update")
 def update(sid, imgString, steering):
     global model, imgCache, steeringCache
+    print('saving img: %.3f' % steering)
     image = Image.open(BytesIO(base64.b64decode(imgString)))
     image = np.asarray(image)
     normalizedImage = normalizeImage(image, grayscale)
     normalizedImage = normalizedImage.reshape(normalizedImage.shape[1:])
+    imgCache.append(normalizedImage)
+    steeringCache.append(steering)
     
-    if len(steeringCache) >= 10:
-        print('training')
-        X = np.array(imgCache, dtype=np.float32)
-        y = np.array(steeringCache, dtype=np.float32)
-        imgCache=[]
-        steeringCache=[]
-        try:
-            history = model.fit(X, y, batch_size=y.shape[0], nb_epoch=1, verbose=2)
-            model.save(dst_model_file)
-            print('Done')
-        except:
-            e = sys.exc_info()[0]
-            print( "Error: %s" % e )
-
-    else:
-        imgCache.append(normalizedImage)
-        steeringCache.append(steering)
-    print('cache len: {0}'.format(len(steeringCache)))
+@sio.on("train")
+def train(sid):
+    global model, imgCache, steeringCache
+    print('training: %d' % len(imgCache))
+    X = np.array(imgCache, dtype=np.float32)
+    y = np.array(steeringCache, dtype=np.float32)
+    imgCache=[]
+    steeringCache=[]
+    try:
+        history = model.fit(X, y, batch_size=y.shape[0], nb_epoch=1, verbose=2)
+        model.save(dst_model_file)
+        print('Done')
+    except:
+        e = sys.exc_info()[0]
+        print( "Error: %s" % e )
+        
+@sio.on("scratch")
+def scratch(sid):
+    global imgCache, steeringCache
+    print('scratch')
+    imgCache=[]
+    steeringCache=[]
 
 if __name__ == '__main__':
 
