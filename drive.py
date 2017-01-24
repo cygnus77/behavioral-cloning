@@ -33,6 +33,7 @@ manualSteering = 0.
 targetSpeed = 0
 throttle = 0.
 turnStep = 0.02
+turnDecay = 0.02
 steering = 0.
 
 @sio.on('telemetry')
@@ -56,11 +57,11 @@ def telemetry(sid, data):
 		orion.emit('update', imgString, steering)
 		on_predict_response(steering)
 
-		if abs(manualSteering) > turnStep:
+		if abs(manualSteering) > turnDecay:
 			if manualSteering > 0:
-				manualSteering -= turnStep
+				manualSteering -= turnDecay
 			else:
-				manualSteering += turnStep
+				manualSteering += turnDecay
 		else:
 			manualSteering = 0.
 	orion.wait_for_callbacks(seconds=1)
@@ -77,24 +78,29 @@ def connect(sid, environ):
     send_control(0, 0)
 
 def keyPressed(event):
-	global manualSteering, targetSpeed, steering
-	if event.char == event.keysym:
-		print('Normal Key %r' % event.char)
-		if event.char == 'q':
-			os._exit(0)
-	else: # special key
-		print('Special Key %r' % event.keysym)
-		if event.keysym == 'Left':
-			manualSteering -= turnStep
-		elif event.keysym == 'Right':
-			manualSteering += turnStep
-		elif event.keysym == 'Up':
-			targetSpeed += 1
-		elif event.keysym == 'Down':
-			targetSpeed -= 1
+    global manualSteering, targetSpeed, steering
 
-		targetSpeed = np.clip(targetSpeed, 0, 30)
-		manualSteering = np.clip(manualSteering, -1., 1.)
+    if event.char == event.keysym:
+        #print('Normal Key %r' % event.char)
+        if event.char == 'q':
+            os._exit(0)
+        elif event.char == 't':
+            orion.emit("train")
+        elif event.char == 's':
+            orion.emit("scratch")
+    else: # special key
+        #print('Special Key %r' % event.keysym)
+        if event.keysym == 'Left':
+            manualSteering -= turnStep
+        elif event.keysym == 'Right':
+            manualSteering += turnStep
+        elif event.keysym == 'Up':
+            targetSpeed += 1
+        elif event.keysym == 'Down':
+            targetSpeed -= 1
+
+    targetSpeed = np.clip(targetSpeed, 0, 30)
+    manualSteering = np.clip(manualSteering, -1., 1.)
 
 def send_control(steering_angle, throttle):
     sio.emit("steer", data={'steering_angle': steering_angle.__str__(), 'throttle': throttle.__str__()}, skip_sid=True)
@@ -112,6 +118,8 @@ if __name__ == '__main__':
                 pass
             eventlet.sleep(0.01)
     root = tkinter.Tk()
+    label = tkinter.Label(text="Press Up/Down to adjust speed. Press Left/Right to turn and train the model.")
+    label.pack()
     root.bind_all('<Key>', keyPressed)
     eventlet.spawn_after(1, main_loop)
 
