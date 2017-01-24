@@ -84,112 +84,53 @@ After implementing a model that matched NVIDIA team's description (layers and nu
 * Models training with a low adjustment value (like .04) resulted in models that could not turn fast enough on sharp curves.
 * Through trial and error, I found that 0.1 was a good value to use.
 * All subsequent augmentations are performed on all three images.
-* Another simple method to generate training data is to horizontally flip each image and negating the steering value. This would yeild and additional three images to train on.
+* Another simple method to generate training data is to horizontally flip each image and negating the steering value. This would yield and additional three images to train on.
 
-Center camera image:
-
-![png](readme/output_1_2.png)
-
-<hr>
-
-Left camera image:
-
-![png](readme/output_1_3.png)
+|Left camera image | Center camera image | Right camera image |
+|------------------|---------------------|--------------------|
+|![png](output_2_3.png)|![png](output_2_2.png)|![png](output_2_4.png)|
 
 <hr>
 
-Right camera image:
-
-![png](readme/output_1_4.png)
-
-<hr>
-
-Image flipped horizontally:
-
-![png](readme/output_1_11.png)
-
-<hr>
-
-###### Synthetic shadows
-* On track 1, the car encounters shadows of trees, power lines and boulders.
-* To train the model to ignore shadows, we add random shadows to training data.
-
-Random shadow added to center image:
-
-![png](readme/output_1_5.png)
-
-<hr>
-
-Random shadow added to left image:
-
-![png](readme/output_1_6.png)
-
-<hr>
-
-Random shadow added to right image:
-
-![png](readme/output_1_7.png)
-
-
-###### Random horizontal shift
+###### Random image shifting
 * Another method to generate additional data is to randomly shift each image (under 1/5 th of the width) and proportionally adjust the steering value.
 
 
-<hr>
-Random horizontal shift added to center image:
-
-![png](readme/output_1_8.png)
-
-<hr>
-
-Random horizontal shift added to left image:
-
-![png](readme/output_1_9.png)
-
-Random horizontal shift added to left image:
-
-![png](readme/output_1_10.png)
+|Source | Shift Vertical | Shift Horizontal | Horizontal Flip |
+|-------|----------------|------------------|-----------------|
+|Center camera|![png](output_2_5.png)|![png](output_2_6.png)|![png](output_2_7.png)|
+|Left camera|![png](output_2_8.png)|![png](output_2_9.png)|![png](output_2_10.png)|
+|Right camera|![png](output_2_11.png)|![png](output_2_12.png)|![png](output_2_13.png)|
 
 <hr>
 
 ###### Brightness adjustment
 * To reduce sensitivity to scene brightness (presumably sunny vs gloomy skies), we add copies of image data with brightness reduced by a factor. Since the data set is bright to begin with, we only reduce brightness, not increase it.
 
-Center image dimmed:
+|Source | 75% | 50% | 25% |
+|-------|------|------|-------|
+|Center camera|![png](output_2_14.png)|![png](output_2_15.png)|![png](output_2_16.png)|
+|Left camera|![png](output_2_17.png)|![png](output_2_18.png)|![png](output_2_19.png)|
+|Right camera|![png](output_2_20.png)|![png](output_2_21.png)|![png](output_2_22.png)|
 
-![png](readme/output_1_12.png)
-
-<hr>
-
-Center image brightened:
-
-![png](readme/output_1_13.png)
 
 <hr>
 
-Left image dimmed:
 
-![png](readme/output_1_14.png)
+###### Synthetic shadows
+* On track 1, the car encounters shadows of trees, power lines and boulders.
+* To train the model to ignore shadows, we add random shadows to training data.
 
-<hr>
+|Source |  Shadow 1    |  Shadow 2 |
+|-------|--------------|-----------|
+|Center camera|![png](output_2_23.png)|![png](output_2_24.png)|
+|Left camera|![png](output_2_25.png)|![png](output_2_26.png)|
+|Right camera|![png](output_2_27.png)|![png](output_2_28.png)|
 
-Left image brightened:
-
-![png](readme/output_1_15.png)
-
-<hr>
-
-Right image dimmed:
-
-![png](readme/output_1_16.png)
 
 <hr>
 
-Right image brightened:
 
-![png](readme/output_1_17.png)
-
-<hr>
 
 ## Training
 * Multi-process system to augment data in parallel to training on GPU.
