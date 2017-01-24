@@ -40,14 +40,16 @@ After implementing a model that matched NVIDIA team's description (layers and nu
 * Car should sucessfully navigate track 1.
 * Car should drive with stability and not sway from side to side.
 
+<hr>
 
 ## Normalization
-* The following transforms are peformed on training, validation data sets and test data from the simulator.
+* The following transforms are peformed on (i) training, (ii) validation data sets and (iii) test data coming from the simulator.
+
 #### Reading Images
 * Input image read from disk are always converted to RGB format.
 
 #### Cropping
-* Crop 1/5th off top and 25px off bottom to eliminate most of the sky and car's hood. This lets the model train on what is most  important - the road!
+* Crop 1/5th off top and 25px off bottom to eliminate most of the sky and car's hood. This lets the model train on what is most important - the road.
 
 #### Color space
 * Image converted to YCbCr color space where Y is the grayscale copy of the image and Cb,Cr contain the color information.
@@ -55,29 +57,31 @@ After implementing a model that matched NVIDIA team's description (layers and nu
 * Keeping the image in YCbCr space made it easier to experiment with training on the Y channel alone.
 
 #### Scaling
-* Images are scaled down to 200x66 to reduce the overall size of the model.
+* Images are scaled down to 200x66 to reduce the overall size of the model. This allows it to train faster and use less memory.
 * The exact numbers (200x66) were chosen to match the NVIDIA model.
 
 #### Pixel value normalization
 * Pixel values are converted from uint8 (0 - 255) range to float32 (-1.0 to +1.0) range.
 * This step is implemented in the model as the first layer so we can take advantage of faster execution on the GPU.
 
-
-## Training data pre-processing
-
-#### Improving training data
-* Majority of the training data contains steering angles that are close to 0. To reduce the disparity, 75% of the rows with low steering values are removed.
-
 #### Steering value normalization
 * Round steering values to 2 decimal places.
 * Each steering angle is one of 200 values in range -1 to +1 (steps of 0.01).
 * This simplifies the problem and could even be treated as a classification problem with 200 classes.
 
+<hr>
 
-#### Data Augmentation
+## Data Augmentation
+* Udacity supplied a data set with 8006 samples, each containing 3 images.
+* A majority of the training data contains steering angles that are close to 0. To reduce the disparity and help the model learn when to turn, 75% of the rows with low steering values are removed.
+* What is left is woefully inadequate to train a deep model such as the NVIDIA model.
 
-###### Using left and right camera images
-* Every training data sample contains images from 3 camera: left, center and right along with a steering value (y)
+* The goal of augmenting the data set is to train the model on a wider range of scenarios, helping it to generalize well.
+* Simple image transforms implemented as python generators can be used to multiply the data set considerably.
+* In all, the augmentation methods below yielded 45 images per sample in the udacity data set.
+
+#### Using left and right camera images
+* Every training data sample contains images from 3 cameras: left, center and right along with a steering value (y).
 * The left and right images can be used as center images by adjusting the steering values: adding adjustment for the left image and subtracting the adjustment value for the right image.
 * I experimented with several values for the steering adustment between 0.25 and 0.04.
 * Models trained with a high adjustment value tended to turn sharply causing the car to zig-zag even on a straight stretch of road.
@@ -92,9 +96,8 @@ After implementing a model that matched NVIDIA team's description (layers and nu
 
 <hr>
 
-###### Random image shifting
+#### Random image shifting
 * Another method to generate additional data is to randomly shift each image (under 1/5 th of the width) and proportionally adjust the steering value.
-
 
 |Source | Shift Vertical | Shift Horizontal | Horizontal Flip |
 |-------|----------------|------------------|-----------------|
@@ -104,7 +107,7 @@ After implementing a model that matched NVIDIA team's description (layers and nu
 
 <hr>
 
-###### Brightness adjustment
+#### Brightness adjustment
 * To reduce sensitivity to scene brightness (presumably sunny vs gloomy skies), we add copies of image data with brightness reduced by a factor. Since the data set is bright to begin with, we only reduce brightness, not increase it.
 
 |Source | 75% | 50% | 25% |
@@ -113,11 +116,9 @@ After implementing a model that matched NVIDIA team's description (layers and nu
 |Left camera|![png](readme/output_2_17.png)|![png](readme/output_2_18.png)|![png](readme/output_2_19.png)|
 |Right camera|![png](readme/output_2_20.png)|![png](readme/output_2_21.png)|![png](readme/output_2_22.png)|
 
-
 <hr>
 
-
-###### Synthetic shadows
+#### Synthetic shadows
 * On track 1, the car encounters shadows of trees, power lines and boulders.
 * To train the model to ignore shadows, we add random shadows to training data.
 
@@ -127,10 +128,9 @@ After implementing a model that matched NVIDIA team's description (layers and nu
 |Left camera|![png](readme/output_2_25.png)|![png](readme/output_2_26.png)|
 |Right camera|![png](readme/output_2_27.png)|![png](readme/output_2_28.png)|
 
-
 <hr>
 
-###### Combination of shift and shadows
+#### Combination of shift and shadows
 * To vary the shadows further, we combine shifting and shadow generation resulting in 18 more images
 
 |Source |Shadow 1 + Vertical|Shadow 1 + Horizontal|Shadow 1 + Flip|Shadow 2 + Vertical|Shadow 2 + Horizontal|Shadow 2 + Flip|
@@ -139,43 +139,97 @@ After implementing a model that matched NVIDIA team's description (layers and nu
 |Left camera|<img src='readme/output_2_35.png' width=100/>|<img src='readme/output_2_36.png' width=100/>|<img src='readme/output_2_37.png' width=100/>|<img src='readme/output_2_38.png' width=100/>|<img src='readme/output_2_39.png' width=100/>|<img src='readme/output_2_40.png' width=100/>|
 |Right camera|<img src='readme/output_2_41.png' width=100/>|<img src='readme/output_2_42.png' width=100/>|<img src='readme/output_2_43.png' width=100/>|<img src='readme/output_2_44.png' width=100/>|<img src='readme/output_2_45.png' width=100/>|<img src='readme/output_2_46.png' width=100/>|
 
-
 <hr>
 
 ## Training
-* Multi-process system to augment data in parallel to training on GPU.
-* This was necessary to speed up data augmentation and training the model.
+* Training is implemented using the Keras framework, specifically the `fit_genrator` method that uses data from generators to train the model.
+* `fit_generator` includes support for multiprocessing so that image augmentmentation can be run in parallel to GPU operations performed by the tensorflow backend.
+* Utilizing this function was necessary to speed up data augmentation and training the model.
 * This ensures the 8 cores on the CPU and the GPU were fully utilized.
-* Training data is shuffled after each epoch
+
 
 ![png](training.png)
 
-* Training data consists of rows of csv data that is collected by
- - removing 75% of 0-steering data points
- - extracting data for validation
+### Multiprocessing
 * Training data is shuffled and divided into 8 sets that are fed into a multiprocessing queue.
-* Keras was set to spawn and run 8 subprocesses of the data generator.
-* Each data generator instance would pop one data set from the multiprocessing queue and use it as its source of images and begin generating augmented images from it.
+* Keras `fit_generator` was set to spawn and run 8 subprocesses of the data generator.
+* Each data generator instance would pop one data set from the multiprocessing queue and use it as its source of images and begin generating augmented images from it. After the end of the epoch, each generator would shuffle its dataset.
 
 
+### Data Validation and Analysis
+* To understand how the model performed, I split the data set into test and validation sets so I could compare the loss values over 25 epochs.
+* Visualizing the performance helped choose:
+- Dropouts
+- Image color space
+- Model size
+- Training hyperparameters
+- Selecting activation layer (RELU vs ELU)
+
+##### Training on Grayscale data
+* Models trained on color images out performed models trained with grayscale images.
+* This maybe because they can distinguish better between shadows on the road and edges of lanes.
+* Models trained on grayscale data often confused lane edges on sharp curves with shadows and drove right out of the road and on to the dirt and continued following the dirt road just fine.
+* Since Track 1 is simpler, the model performed fairly well even when trained with grayscale images.
+
+##### Experimenting with Dropout
+* I tried the following options with dropouts:
+  - NVIDIA model with no Dropout layers
+  - NVIDIA model with Dropout layers only on the fully-connected layers
+  - Dropout applied to all layers, including convolutional
+  - Varying the amount of Dropout values
+
+* After several tests, it became clear that when the augmented data set is large, dropout layers are essential to preventing overfitting.
+* The best results came from applying dropouts to all layers including convolutional layers.
+* The amount of dropout was capped at 0.5 (keep 50% of values).
+* On shallower convolutional layers (such as the first two), the dropout was reduced to 0.25 (keep 25% of values).
+* This was 
+
+##### Adjusting NVIDIA architecture
+* Number of variables same as NVIDIA model (250000)
+* border-mode "Valid" and "Same"
+* Same: Trainable params: 270,219
+* Switching Conv. 3,4 and 5 to use "Valid" mode almost doubled the number of trainable params to 501,819. Models using this mode trained better with lower loss values, but was prone to overfitting, requiring the addition of dropout layers.
+
+<hr>
 
 ## Live Trainer
-* After training the model, it still requires additional data at places on the track where it veers too close to the edge.
-* Drive.py was modified to do live training.
+* After training the model with above augmentation, it performed quite well "out-of-the-box" at lower speeds (20mph). The car could comfortably do several laps without error.
+
+* But when running the model at the top speed of 30mph, it veers too close to the edge of curved sections of road.
+* To teach the model how to handle curves at higher speed, it requires additional data especially around the curved sections of road.
+
+* To accomplish this, I implementd live training a method documented by "".
+
+* `Drive.py` was modified to implement live training as shown below:
 
 ![png](live_training.png)
 
-** Prediction
-    * Prediction requests from the simulator are forwarded to a new process 'predict-train.py' which runs on the linux box with the GPU.
-    * Throttle values
+** Starting up **
+* The Udacity simulator is fired up in simulation mode.
+* `predict-train.py` and `drive.py` are started in terminal windows.
+* `drive` has a UI window that accepts key presses tha control the system.
+  - **Up/Down**: increase or decrease car's speed (between 0 and 30)
+  - **Left/Right** to make a turn manually (instead of predicting from the model) and cache the image and manual steering value for training later.
+  - **T (train)**: train model with cached data and commit to disk. This could take time, so do this when the car is on a straight stretch and not requiring manual override.
+  - **S (scratch it)**: discard cached data - useful when the manual turn was not good and should be discarded.
+  - **Q**: Exit app.
 
-** Training
-    * Drive.py has a UI window that accepts key presses: up,down,left and right
-    * Up and down adjust the target speed value (between 0 and 30)
-    * If Left/Right key is pressed, drive.py will:
-        - calculate new steering value by adusting current steering based on the key pressed
-        - send the current image and computed steering to predict-train
-        - predict-train will cache the image-steering set and once it has enough cached items, will train the model and update the model file on disk.
+
+** Predicting **
+* The simulator would always request `drive` for steering and throttle values.
+* Normally, `drive` forwards the request to `predict-train` with the command 'predict'.
+* `predict-train` would call Keras' predict function to generate the steering angle based on the image.
+* `drive` would adjust the throttle to keep the cars speed around the user specified value.
+
+** Training **
+* When the car needs additional data at some point in the track, we can provide manual input by pressing the Left/Right keys.
+* When a request for steering values comes in from the simulator, `drive` would supply the user provided steering input instead of making a prediction with the model. The new steering value is calculate by adusting current steering by a predefined 'turn-amount' based on the key pressed.
+* `drive`will also send the current image and computed steering to `predict-train`
+* `predict-train` will cache the image-steering set in memory.
+* After manual input is done, press 'T' in `drive` to signal `predict-train` to update the model with data in its cache. This is done using the Keras `fit` method. After model is fitted, it is persisted to disk and the cache is cleared.
+
+<hr>
+
 
 ### ToDo: Screenshot of live training, showing all UIs
 
@@ -185,31 +239,6 @@ Driving a few laps and training an additional 100 samples corrected the model en
 ### ToDo: Video of training lap spedforward
 
 
-## Attempts
-
-
-### Training on Grayscale data
-
-### Experimenting with Augmentation
-* Steering adjustment for left and right camera images
-
-### Experimenting with Dropout
-* No Dropout
-* Dropout only on the fully-connected layer
-* Dropout on all layers
-* Little dropout / Large dropout
-
-### Experimenting with Architectures
-* Number of variables same as NVIDIA model (250000)
-* border-mode "Valid" and "Same"
-* Same: Trainable params: 270,219
-* Switching Conv. 3,4 and 5 to use "Valid" mode almost doubled the number of trainable params to 501,819. Models using this mode trained better with lower loss values, but was prone to overfitting, requiring the addition of dropout layers.
-
-
-### Experimenting with Optimizers
-
-
-### Experimenting with RELU vs ELU
 
 ## Material Referenced
 
