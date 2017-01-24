@@ -118,8 +118,15 @@ if __name__ == '__main__':
                 pass
             eventlet.sleep(0.01)
     root = tkinter.Tk()
-    label = tkinter.Label(text="Press Up/Down to adjust speed. Press Left/Right to turn and train the model.")
-    label.pack()
+    root.title("Live Training")
+    frm = tkinter.Frame(master=root, height=50)
+    tkinter.Label(text="Live Training Key Code", font=("Helvetica", 12)).pack()
+    tkinter.Label(text="Up/Down to adjust speed.").pack(anchor="w")
+    tkinter.Label(text="Left/Right to manually turn and cache image,steering data.").pack(anchor="w")
+    tkinter.Label(text="T (train): train model with cached data and commit to disk.").pack(anchor="w")
+    tkinter.Label(text="S (scratch it): discard cached data.").pack(anchor="w")
+    tkinter.Label(text="Q: Exit app.").pack(anchor="w")
+    frm.pack()
     root.bind_all('<Key>', keyPressed)
     eventlet.spawn_after(1, main_loop)
 
