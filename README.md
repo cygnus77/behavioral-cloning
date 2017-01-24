@@ -88,7 +88,7 @@ After implementing a model that matched NVIDIA team's description (layers and nu
 
 |Left camera image | Center camera image | Right camera image |
 |------------------|---------------------|--------------------|
-|![png](output_2_3.png)|![png](output_2_2.png)|![png](output_2_4.png)|
+|![png](readme/output_2_3.png)|![png](readme/output_2_2.png)|![png](readme/output_2_4.png)|
 
 <hr>
 
@@ -98,9 +98,9 @@ After implementing a model that matched NVIDIA team's description (layers and nu
 
 |Source | Shift Vertical | Shift Horizontal | Horizontal Flip |
 |-------|----------------|------------------|-----------------|
-|Center camera|![png](output_2_5.png)|![png](output_2_6.png)|![png](output_2_7.png)|
-|Left camera|![png](output_2_8.png)|![png](output_2_9.png)|![png](output_2_10.png)|
-|Right camera|![png](output_2_11.png)|![png](output_2_12.png)|![png](output_2_13.png)|
+|Center camera|![png](readme/output_2_5.png)|![png](readme/output_2_6.png)|![png](readme/output_2_7.png)|
+|Left camera|![png](readme/output_2_8.png)|![png](readme/output_2_9.png)|![png](readme/output_2_10.png)|
+|Right camera|![png](readme/output_2_11.png)|![png](readme/output_2_12.png)|![png](readme/output_2_13.png)|
 
 <hr>
 
@@ -109,9 +109,9 @@ After implementing a model that matched NVIDIA team's description (layers and nu
 
 |Source | 75% | 50% | 25% |
 |-------|------|------|-------|
-|Center camera|![png](output_2_14.png)|![png](output_2_15.png)|![png](output_2_16.png)|
-|Left camera|![png](output_2_17.png)|![png](output_2_18.png)|![png](output_2_19.png)|
-|Right camera|![png](output_2_20.png)|![png](output_2_21.png)|![png](output_2_22.png)|
+|Center camera|![png](readme/output_2_14.png)|![png](readme/output_2_15.png)|![png](readme/output_2_16.png)|
+|Left camera|![png](readme/output_2_17.png)|![png](readme/output_2_18.png)|![png](readme/output_2_19.png)|
+|Right camera|![png](readme/output_2_20.png)|![png](readme/output_2_21.png)|![png](readme/output_2_22.png)|
 
 
 <hr>
@@ -123,9 +123,9 @@ After implementing a model that matched NVIDIA team's description (layers and nu
 
 |Source |  Shadow 1    |  Shadow 2 |
 |-------|--------------|-----------|
-|Center camera|![png](output_2_23.png)|![png](output_2_24.png)|
-|Left camera|![png](output_2_25.png)|![png](output_2_26.png)|
-|Right camera|![png](output_2_27.png)|![png](output_2_28.png)|
+|Center camera|![png](readme/output_2_23.png)|![png](readme/output_2_24.png)|
+|Left camera|![png](readme/output_2_25.png)|![png](readme/output_2_26.png)|
+|Right camera|![png](readme/output_2_27.png)|![png](readme/output_2_28.png)|
 
 
 <hr>
