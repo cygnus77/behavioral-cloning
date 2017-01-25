@@ -65,14 +65,14 @@ def genShadowsOnView(src):
     for img, steering in src:
         # add random shadows to center, right and left cameras
         yield (addShadow(img), steering)
-        yield (addShadow(img), steering)
+        #yield (addShadow(img), steering)
 
 def genDimmerViews(src):
     for img, steering in src:
         # vary image brightness on each camera - to half and third of the original brightness
         yield (adjustBrightness(img, .75), steering)
         yield (adjustBrightness(img, .5), steering)
-        yield (adjustBrightness(img, .25), steering)
+        #yield (adjustBrightness(img, .25), steering)
 
 def genShiftedViews(src):
     for img, steering in src:
@@ -307,7 +307,7 @@ if __name__ == '__main__':
     parser.add_argument('-prep', dest='prep', help='Preprocessed images folder. If omitted, images will be generated on the fly.')
     args = parser.parse_args()
     
-    timestamp = datetime.now.strftime('%Y%m%d%H%M%S')
+    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
     
     # Get file path to model
     model_file = args.model
@@ -368,7 +368,7 @@ if __name__ == '__main__':
     model.summary()
 
     # Train
-    optimizer = Adam(lr=0.0001)
+    optimizer = Adam() #lr=0.0001)
     model.compile(loss='mean_squared_error', optimizer=optimizer)
     
     # Use preprocessed data from folder instead of creating it online
@@ -384,16 +384,23 @@ if __name__ == '__main__':
         generator = genPrepData(list(os.listdir(prep_folder)))
         args.validation = False
 
-    # Checkpoint model automatically at the end of each epoch
-    auto_save_model = ModelCheckpoint(filepath = os.path.join(DATA_DIR,"weights."+timestamp+".{epoch:02d}-{loss:.2f}.h5"), verbose=1)
-
     # Train the model
     if args.validation:
+        # Checkpoint model automatically at the end of each epoch, track with validation
+        auto_save_model = ModelCheckpoint(
+            filepath = os.path.join(DATA_DIR,"weights."+timestamp+".{epoch:02d}-{val_loss:.2f}.h5"), 
+            verbose=1)
+
         history = model.fit_generator(generator, samples_per_epoch=numRows, 
                                       nb_epoch=args.epochs, verbose=1, pickle_safe=True, max_q_size=3000, nb_worker=NUM_THREADS,
                                       validation_data=genNormalizedData(genValidationData(val), args.gray), 
                                       nb_val_samples=len(val), callbacks=[auto_save_model])
     else:
+        # Checkpoint model automatically at the end of each epoch
+        auto_save_model = ModelCheckpoint(
+            filepath = os.path.join(DATA_DIR,"weights."+timestamp+".{epoch:02d}-{loss:.2f}.h5"), 
+            verbose=1)
+        
         history = model.fit_generator(generator, samples_per_epoch=numRows, 
                                       nb_epoch=args.epochs, verbose=1, pickle_safe=True, max_q_size=3000, nb_worker=NUM_THREADS,
                                       callbacks=[auto_save_model])

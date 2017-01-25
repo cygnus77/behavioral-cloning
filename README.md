@@ -218,7 +218,7 @@ After implementing a model that matched NVIDIA team's description (layers and nu
 ** Predicting **
 * The simulator would always request `drive` for steering and throttle values.
 * Normally, `drive` forwards the request to `predict-train` with the command 'predict'.
-* `predict-train` would call Keras' predict function to generate the steering angle based on the image.
+* `predict-train` would call Keras' Squential `predict` function to generate the steering angle based on the image.
 * `drive` would adjust the throttle to keep the cars speed around the user specified value.
 
 ** Training **
@@ -226,7 +226,7 @@ After implementing a model that matched NVIDIA team's description (layers and nu
 * When a request for steering values comes in from the simulator, `drive` would supply the user provided steering input instead of making a prediction with the model. The new steering value is calculate by adusting current steering by a predefined 'turn-amount' based on the key pressed.
 * `drive`will also send the current image and computed steering to `predict-train`
 * `predict-train` will cache the image-steering set in memory.
-* After manual input is done, press 'T' in `drive` to signal `predict-train` to update the model with data in its cache. This is done using the Keras `fit` method. After model is fitted, it is persisted to disk and the cache is cleared.
+* After manual input is done, press 'T' in `drive` to signal `predict-train` to update the model with data in its cache. This is done using the Keras Squential `fit` method. After model is fitted, it is persisted to disk and the cache is cleared.
 
 <hr>
 
