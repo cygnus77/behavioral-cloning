@@ -1,4 +1,6 @@
 # Behavioral Cloning
+_Anand Dinakar_
+Jan. 2017
 
 
 ## Model Architecture
@@ -74,13 +76,13 @@ After implementing a model that matched NVIDIA team's description (layers and nu
 ## Data Augmentation
 * Udacity supplied a data set with 8006 samples, each containing 3 images.
 * A majority of the training data contains steering angles that are close to 0. To reduce the disparity and help the model learn when to turn, 75% of the rows with low steering values are removed.
-* What is left (~4740 images) is woefully inadequate to train a deep model such as the NVIDIA model.
+* What is left (~1580 samples) is woefully inadequate to train a deep model such as the NVIDIA model.
 
 * The goal of augmenting the data set is to train the model on a wider range of scenarios, helping it to generalize well.
 * Simple image transforms implemented as python generators can be used to multiply the data set considerably.
 * In all, the augmentation methods below yielded 45 images per sample in the udacity data set.
 
-* After augmentation, 4,740 images are augmented to 213,300 samples.
+* After augmentation, 4,740 images (from 1580 samples) are augmented to 213,300 images.
 
 #### Using left and right camera images
 * Every training data sample contains images from 3 cameras: left, center and right along with a steering value (y).
@@ -144,7 +146,7 @@ After implementing a model that matched NVIDIA team's description (layers and nu
 <hr>
 
 ## Training
-* Training is implemented using the Keras framework, specifically the `fit_genrator` method that uses data from generators to train the model.
+* Training is implemented using the Keras framework, specifically the `fit_genrator` method in `Sequential` that uses data from generators to train the model.
 * `fit_generator` includes support for multiprocessing so that image augmentmentation can be run in parallel to GPU operations performed by the tensorflow backend.
 * Utilizing this function was necessary to speed up data augmentation and training the model.
 * This ensures the 8 cores on the CPU and the GPU were fully utilized.
@@ -206,10 +208,13 @@ Grayscale data performs well too !
 * This was 
 
 ##### Adjusting NVIDIA architecture
-* Number of variables same as NVIDIA model (250000)
-* border-mode "Valid" and "Same"
-* Same: Trainable params: 270,219
-* Switching Conv. 3,4 and 5 to use "Valid" mode almost doubled the number of trainable params to 501,819. Models using this mode trained better with lower loss values, but was prone to overfitting, requiring the addition of dropout layers.
+* Setting all 5 convolutional layers' border-mode to 'Same' lets the model match the number of trainable parameters mentioned in the NVIDIA model (~250,000 parameters).
+* Switching convolutional layers 3, 4 and 5 to use 'Valid' mode almost doubled the number of trainable params to 501,819. Models using this mode trained better with lower loss values, but was prone to overfitting, requiring the addition of dropout layers.
+
+##### Optimizer
+* I chose to use the `Adam` optimizer as it converged a little faster than `SDG`.
+* With either optimizer, I had to set a small learning rate (1e-4) to see a drop in loss values.
+
 
 <hr>
 
@@ -219,7 +224,7 @@ Grayscale data performs well too !
 * But when running the model at the top speed of 30mph, it veers too close to the edge of curved sections of road.
 * To teach the model how to handle curves at higher speed, it requires additional data especially around the curved sections of road.
 
-* To accomplish this, I implementd live training a method documented by [Thomas Antony](https://medium.com/@tantony/training-a-neural-network-in-real-time-to-control-a-self-driving-car-9ee5654978b7).
+* To accomplish this, I implemented `live training` a method described by [Thomas Antony](https://medium.com/@tantony/training-a-neural-network-in-real-time-to-control-a-self-driving-car-9ee5654978b7).
 
 * `Drive.py` was modified to implement live training as shown below:
 

@@ -375,7 +375,7 @@ if __name__ == '__main__':
     model.summary()
 
     # Train
-    optimizer = Adam() #lr=0.0001)
+    optimizer = Adam(lr=0.0001)
     model.compile(loss='mean_squared_error', optimizer=optimizer)
     
     # Use preprocessed data from folder instead of creating it online
