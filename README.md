@@ -236,8 +236,12 @@ After implementing a model that matched NVIDIA team's description (layers and nu
 Driving a few laps and training an additional 100 samples corrected the model enough to be able to drive around the first track all night long without crashing.
 
 
-### ToDo: Video of training lap spedforward
+### Video of Car on Track 1
 
+[![Driving on track 1](https://img.youtube.com/vi/M0-2QcEmiAI/0.jpg)](https://youtu.be/M0-2QcEmiAI)
+
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/M0-2QcEmiAI" frameborder="0" allowfullscreen></iframe>
 
 
 ## Material Referenced
