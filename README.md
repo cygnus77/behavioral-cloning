@@ -165,6 +165,19 @@ After implementing a model that matched NVIDIA team's description (layers and nu
 - Training hyperparameters
 - Selecting activation layer (RELU vs ELU)
 
+
+* Note clear separation between training and validation loss values indicating overfitting.
+![png](No Dropout \(RELU\).png)
+
+* Note ELU leads to softer loss curve
+![png](No Dropout \(ELU\).png)
+
+* Note better performance on validation data even if the absolute loss value is larger than when no dropout is used.
+![png](Dropout ELU.png)
+
+![png](Grayscale Dropout ELU.png)
+
+
 ##### Training on Grayscale data
 * Models trained on color images out performed models trained with grayscale images.
 * This maybe because they can distinguish better between shadows on the road and edges of lanes.
@@ -204,7 +217,7 @@ After implementing a model that matched NVIDIA team's description (layers and nu
 
 ![png](live_training.png)
 
-** Starting up **
+##### Starting up
 * The Udacity simulator is fired up in simulation mode.
 * `predict-train.py` and `drive.py` are started in terminal windows.
 * `drive` has a UI window that accepts key presses tha control the system.
@@ -215,13 +228,13 @@ After implementing a model that matched NVIDIA team's description (layers and nu
   - **Q**: Exit app.
 
 
-** Predicting **
+##### Predicting
 * The simulator would always request `drive` for steering and throttle values.
 * Normally, `drive` forwards the request to `predict-train` with the command 'predict'.
 * `predict-train` would call Keras' Squential `predict` function to generate the steering angle based on the image.
 * `drive` would adjust the throttle to keep the cars speed around the user specified value.
 
-** Training **
+##### Training 
 * When the car needs additional data at some point in the track, we can provide manual input by pressing the Left/Right keys.
 * When a request for steering values comes in from the simulator, `drive` would supply the user provided steering input instead of making a prediction with the model. The new steering value is calculate by adusting current steering by a predefined 'turn-amount' based on the key pressed.
 * `drive`will also send the current image and computed steering to `predict-train`
@@ -230,22 +243,26 @@ After implementing a model that matched NVIDIA team's description (layers and nu
 
 <hr>
 
-
-### ToDo: Screenshot of live training, showing all UIs
-
 Driving a few laps and training an additional 100 samples corrected the model enough to be able to drive around the first track all night long without crashing.
 
 
 ### Video of Car on Track 1
 
+This video shows my environment with `drive`, `predict-train` and the simulator running.
+
 [![Driving on track 1](https://img.youtube.com/vi/M0-2QcEmiAI/0.jpg)](https://youtu.be/M0-2QcEmiAI)
 
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/M0-2QcEmiAI" frameborder="0" allowfullscreen></iframe>
+
+## References
+
+[Live Trainer by Thomas Antony](https://medium.com/@tantony/training-a-neural-network-in-real-time-to-control-a-self-driving-car-9ee5654978b7)
+
+[Augmenting NVIDIA's CNN by Vivek Yadav](https://chatbotslife.com/learning-human-driving-behavior-using-nvidias-neural-network-model-and-image-augmentation-80399360efee)
 
 
-## Material Referenced
+## Future
 
-
-
+* Explore grayscale based models further
+* Explore [Grand Theft Auto V simulated world](https://openai.com/blog/GTA-V-plus-Universe/)
 
