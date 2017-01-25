@@ -74,11 +74,13 @@ After implementing a model that matched NVIDIA team's description (layers and nu
 ## Data Augmentation
 * Udacity supplied a data set with 8006 samples, each containing 3 images.
 * A majority of the training data contains steering angles that are close to 0. To reduce the disparity and help the model learn when to turn, 75% of the rows with low steering values are removed.
-* What is left is woefully inadequate to train a deep model such as the NVIDIA model.
+* What is left (~4740 images) is woefully inadequate to train a deep model such as the NVIDIA model.
 
 * The goal of augmenting the data set is to train the model on a wider range of scenarios, helping it to generalize well.
 * Simple image transforms implemented as python generators can be used to multiply the data set considerably.
 * In all, the augmentation methods below yielded 45 images per sample in the udacity data set.
+
+* After augmentation, 4,740 images are augmented to 213,300 samples.
 
 #### Using left and right camera images
 * Every training data sample contains images from 3 cameras: left, center and right along with a steering value (y).
@@ -211,7 +213,7 @@ After implementing a model that matched NVIDIA team's description (layers and nu
 * But when running the model at the top speed of 30mph, it veers too close to the edge of curved sections of road.
 * To teach the model how to handle curves at higher speed, it requires additional data especially around the curved sections of road.
 
-* To accomplish this, I implementd live training a method documented by "".
+* To accomplish this, I implementd live training a method documented by [Thomas Antony](https://medium.com/@tantony/training-a-neural-network-in-real-time-to-control-a-self-driving-car-9ee5654978b7).
 
 * `Drive.py` was modified to implement live training as shown below:
 
