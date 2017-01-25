@@ -32,7 +32,9 @@ dataQueue = Queue()
 """
 Functions for training
 """
-# generate training data in an infinite loop - passed into keras fit_generator
+# Generator passed into keras fit_generator
+# Draw a block of data from the multiprocessing queue and
+# generates training data in an infinite loop
 def genTrainingData(gray):
     data = dataQueue.get()
     print("Generator data size: %d" % len(data))
@@ -42,6 +44,7 @@ def genTrainingData(gray):
         for sample in src:
             yield sample
 
+# Generator for validation data
 def genValidationData(data):
     while True:
         for row in data:
@@ -61,19 +64,23 @@ def filterDrivingLog(src, threshold, keepPercentage):
         if abs(steering) > threshold or np.random.randint(0,100) <= keepPercentage:
             yield row
 
+# Generator to produce images with shadows
 def genShadowsOnView(src):
     for img, steering in src:
         # add random shadows to center, right and left cameras
         yield (addShadow(img), steering)
-        #yield (addShadow(img), steering)
+        yield (addShadow(img), steering)
 
+# Generator to produce images dimmed by a fraction
 def genDimmerViews(src):
     for img, steering in src:
         # vary image brightness on each camera - to half and third of the original brightness
         yield (adjustBrightness(img, .75), steering)
         yield (adjustBrightness(img, .5), steering)
-        #yield (adjustBrightness(img, .25), steering)
+        yield (adjustBrightness(img, .25), steering)
 
+# Generator to produce images shifted vertically, horizontally and flipped
+# also returns adjusted steering values
 def genShiftedViews(src):
     for img, steering in src:
         # add random shifts
@@ -113,9 +120,8 @@ def genAugmentedViews(src):
         
 
 # shift image horizontally by a random number of pixels and proportionally adjust steering angle
-# axis 1 for horizontal, 0 for vertical
+# axis=1 for horizontal, axis=0 for vertical
 def addShift(img, steering, axis):
-     
     # pick random shift amount between -1/5th width to +1/5th width
     amt = int(np.random.randint(-img.shape[axis]//5,img.shape[axis]//5+1))
     # destination image that will contain shifted image
@@ -148,8 +154,7 @@ def addShadow(img):
     # convert image to YUV space to get the luma (brightness) channel
     y,u,v = cv2.split(cv2.cvtColor(img, cv2.COLOR_RGB2YCrCb))
     y = y.astype(np.int32)
-    # create mask image with same shape as input image
-    #mask = np.zeros(y.shape, dtype=np.int32)
+
     # compute a random line in slope, intercept form
     # random x1,x2 values (y1=0, y2=height)
     x1 = np.random.uniform() * y.shape[1]
@@ -161,8 +166,7 @@ def addShadow(img):
         for i in range(y.shape[1]):
             if j > (i*slope)+intercept:
                 y[j,i] -= shadow_shade
-    # apply mask
-    #y += mask
+
     # ensure values are within uint8 range to avoid artifacts
     y = np.clip(y, 0,255).astype(np.uint8)
     # convert back to RGB
@@ -285,6 +289,9 @@ def nvidia_model(input_shape, use_dropout = True):
     
     return model
 
+# generator for loading pre-processed images from disk
+# this is useful to test various architectures on exact same augmented set
+# note: augmented set produced by above functions are persisted by another program
 def genPrepData(prep_file_list):
     while True:
         for fname in shuffle(prep_file_list):
@@ -296,7 +303,7 @@ def genPrepData(prep_file_list):
                     pass
 
 if __name__ == '__main__':
-
+    # Arguments
     parser = argparse.ArgumentParser(description='Train NVIDIA Model on Udacity data')
     parser.add_argument('model', help='file name where model is stored. Extension must be .h5, will be added if not provided')
     parser.add_argument('epochs', help='Number of epoch', type=int)
