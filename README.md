@@ -3,7 +3,7 @@
 
 ## Model Architecture
 
-![png](model.png)
+![png](readme/model.png)
 
 | Layer and Type | Output Size | Params|
 |----------------|-------------|-------|
@@ -150,7 +150,7 @@ After implementing a model that matched NVIDIA team's description (layers and nu
 * This ensures the 8 cores on the CPU and the GPU were fully utilized.
 
 
-![png](training.png)
+![png](readme/training.png)
 
 ### Multiprocessing
 * Training data is shuffled and divided into 8 sets that are fed into a multiprocessing queue.
@@ -167,17 +167,23 @@ After implementing a model that matched NVIDIA team's description (layers and nu
 - Training hyperparameters
 - Selecting activation layer (RELU vs ELU)
 
+Note clear separation between training and validation loss values indicating overfitting.
 
-* Note clear separation between training and validation loss values indicating overfitting.
-![png](No Dropout \(RELU\).png)
+![png](readme/No Dropout \(RELU\).png)
 
-* Note ELU leads to softer loss curve
-![png](No Dropout \(ELU\).png)
 
-* Note better performance on validation data even if the absolute loss value is larger than when no dropout is used.
-![png](Dropout ELU.png)
+ELU leads to softer loss curve
 
-![png](Grayscale Dropout ELU.png)
+![png](readme/No Dropout \(ELU\).png)|
+
+Note better performance on validation data even if the absolute loss value is larger than when no dropout is used.
+
+![png](readme/Dropout ELU.png)
+
+
+Grayscale data performs well too !
+
+![png](readme/Grayscale Dropout ELU.png)
 
 
 ##### Training on Grayscale data
@@ -217,7 +223,7 @@ After implementing a model that matched NVIDIA team's description (layers and nu
 
 * `Drive.py` was modified to implement live training as shown below:
 
-![png](live_training.png)
+![png](readme/live_training.png)
 
 ##### Starting up
 * The Udacity simulator is fired up in simulation mode.
