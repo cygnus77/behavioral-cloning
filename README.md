@@ -300,6 +300,9 @@ Please follow the steps below to run the model.
   * Press up arrow key to speed up
 
 
+![png](readme/startup.png)
+
+
 ## References
 
 [Live Trainer by Thomas Antony](https://medium.com/@tantony/training-a-neural-network-in-real-time-to-control-a-self-driving-car-9ee5654978b7)
