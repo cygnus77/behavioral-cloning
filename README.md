@@ -232,7 +232,7 @@ Grayscale data performs well too !
 
 ##### Starting up
 * The Udacity simulator is fired up in simulation mode.
-* `predict-train.py` and `drive.py` are started in terminal windows.
+* `predict-train.py` and `drive-remote.py` are started in terminal windows.
 * `drive` has a UI window that accepts key presses tha control the system.
   - **Up/Down**: increase or decrease car's speed (between 0 and 30)
   - **Left/Right** to make a turn manually (instead of predicting from the model) and cache the image and manual steering value for training later.
@@ -266,7 +266,7 @@ This video shows my environment with `drive`, `predict-train` and the simulator 
 [![Driving on track 1](https://img.youtube.com/vi/M0-2QcEmiAI/0.jpg)](https://youtu.be/M0-2QcEmiAI)
 
 
-## Running the model
+## Running the project for predicting and training
 Please follow the steps below to run the model.
 
 #### Pre-requisites
@@ -288,12 +288,12 @@ Please follow the steps below to run the model.
   Example:
    - `python predict-train.py -m model.h5 -o 1`
 
-3. Launch drive.py from terminal
-  - usage: `drive.py [-h] [addr]`
+3. Launch drive-remote.py from terminal
+  - usage: `drive-remote.py [-h] [addr]`
    - addr        IP address or hostname of computer running predict-train.py. If none supplied, uses localhost.
 
   Example:
-   - `python drive.py`
+   - `python drive-remote.py`
         
 4. Accelarate
   * Click on the GUI window to set focus
