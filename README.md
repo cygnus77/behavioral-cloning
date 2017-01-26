@@ -280,21 +280,25 @@ Please follow the steps below to run the model.
 1. Launch simulator
 2. Launch predict-train.py
 
-  usage: predict-train.py [-h] -m MODEL [-i INPUT] -o OUTPUT [-g]
+  usage: `predict-train.py [-h] -m MODEL [-i INPUT] -o OUTPUT [-g]`
+
    -m MODEL    model file (required)
    -o OUTPUT   output model number (required)
    -i INPUT    input model number (optional)
    -g          grayscale (optional
 
   * Example:
+
    `python predict-train.py -m model.h5 -o 1`
 
 3. Launch drive.py from terminal
 
-  usage: drive.py [-h] [addr]
+  usage: `drive.py [-h] [addr]`
+  
    addr        IP address or hostname of computer running predict-train.py. If none supplied, uses localhost.
 
   * Example:
+
    `python drive.py`
         
 4. Accelarate
