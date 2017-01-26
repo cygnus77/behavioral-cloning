@@ -278,21 +278,21 @@ This video shows my environment with `drive`, `predict-train` and the simulator 
 #### Steps
 1. Launch simulator
 2. Launch predict-train.py
-    * Arguments:
-        -m <model.h5> -o <n>
-    * Example:
-       python predict-train.py -m model.h5 -o 1
+  * Arguments:
+   -m <model.h5> -o <n>
+  * Example:
+  `python predict-train.py -m model.h5 -o 1`
 
 3. Launch drive.py from terminal
-    * Arguments:
-        {predictor_address} ip address or hostname of computer running the predictor. If none supplied, uses localhost.
+  * Arguments:
+  {predictor_address} ip address or hostname of computer running the predictor. If none supplied, uses localhost.
 
-    * Example:
-        python drive.py
+  * Example:
+  `python drive.py`
         
 4. Accelarate
-    * Set focus to GUI window
-    * press up arrow key to speed up
+  * Set focus to GUI window
+  * press up arrow key to speed up
 
 ## References
 
