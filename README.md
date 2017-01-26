@@ -281,11 +281,10 @@ Please follow the steps below to run the model.
 2. Launch predict-train.py
 
   usage: `predict-train.py [-h] -m MODEL [-i INPUT] -o OUTPUT [-g]`
-
-   -m MODEL    model file (required)
-   -o OUTPUT   output model number (required)
-   -i INPUT    input model number (optional)
-   -g          grayscale (optional
+   - -m MODEL    model file (required)
+   - -o OUTPUT   output model number (required)
+   - -i INPUT    input model number (optional)
+   - -g          grayscale (optional
 
   * Example:
 
@@ -294,8 +293,7 @@ Please follow the steps below to run the model.
 3. Launch drive.py from terminal
 
   usage: `drive.py [-h] [addr]`
-  
-   addr        IP address or hostname of computer running predict-train.py. If none supplied, uses localhost.
+   - addr        IP address or hostname of computer running predict-train.py. If none supplied, uses localhost.
 
   * Example:
 
