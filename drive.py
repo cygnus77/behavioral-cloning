@@ -1,7 +1,7 @@
 import os
 import base64
 import json
-
+import argparse
 import numpy as np
 import socketio
 import eventlet
@@ -11,7 +11,6 @@ from PIL import Image
 from PIL import ImageOps
 from flask import Flask, render_template
 from io import BytesIO
-
 
 import socketIO_client
 import tkinter
@@ -27,7 +26,7 @@ app = Flask(__name__)
 model = None
 prev_image_array = None
 
-orion = socketIO_client.SocketIO('orion', 5678, socketIO_client.LoggingNamespace)
+predictor = None
 
 manualSteering = 0.
 targetSpeed = 0
@@ -50,11 +49,11 @@ def telemetry(sid, data):
 	imgString = data["image"]
 	
 	if manualSteering == 0:
-		# Make call to orion
-		orion.emit('predict', imgString, on_predict_response)
+		# Make call to predictor
+		predictor.emit('predict', imgString, on_predict_response)
 	else:
 		steering = steering + manualSteering
-		orion.emit('update', imgString, steering)
+		predictor.emit('update', imgString, steering)
 		on_predict_response(steering)
 
 		if abs(manualSteering) > turnDecay:
@@ -64,7 +63,7 @@ def telemetry(sid, data):
 				manualSteering += turnDecay
 		else:
 			manualSteering = 0.
-	orion.wait_for_callbacks(seconds=1)
+	predictor.wait_for_callbacks(seconds=1)
 
 def on_predict_response(steering_angle):
 	global throttle, steering
@@ -85,9 +84,9 @@ def keyPressed(event):
         if event.char == 'q':
             os._exit(0)
         elif event.char == 't':
-            orion.emit("train")
+            predictor.emit("train")
         elif event.char == 's':
-            orion.emit("scratch")
+            predictor.emit("scratch")
     else: # special key
         #print('Special Key %r' % event.keysym)
         if event.keysym == 'Left':
@@ -106,6 +105,14 @@ def send_control(steering_angle, throttle):
     sio.emit("steer", data={'steering_angle': steering_angle.__str__(), 'throttle': throttle.__str__()}, skip_sid=True)
 
 if __name__ == '__main__':
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('addr', nargs='?', default='localhost', help='IP address or hostname of computer running predict-train.py')
+    args = parser.parse_args()
+
+    print("Waiting to connect to predictor at {0}:5678".format(args.addr))
+    predictor = socketIO_client.SocketIO(args.addr, 5678, socketIO_client.LoggingNamespace)
+    
     # wrap Flask application with engineio's middleware
     app = socketio.Middleware(sio, app)
 
