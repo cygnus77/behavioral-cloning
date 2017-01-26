@@ -266,7 +266,9 @@ This video shows my environment with `drive`, `predict-train` and the simulator 
 [![Driving on track 1](https://img.youtube.com/vi/M0-2QcEmiAI/0.jpg)](https://youtu.be/M0-2QcEmiAI)
 
 
-## Running the programs
+## Running the model
+Please follow the steps below to run the model.
+
 #### Pre-requisites
 * `tkinter`
 * `socketio`
@@ -274,25 +276,31 @@ This video shows my environment with `drive`, `predict-train` and the simulator 
 * `flask`
 * `socketIO_client`
 
-
 #### Steps
 1. Launch simulator
 2. Launch predict-train.py
-  * Arguments:
-   -m <model.h5> -o <n>
+
+  usage: predict-train.py [-h] -m MODEL [-i INPUT] -o OUTPUT [-g]
+   -m MODEL    model file (required)
+   -o OUTPUT   output model number (required)
+   -i INPUT    input model number (optional)
+   -g          grayscale (optional
+
   * Example:
-  `python predict-train.py -m model.h5 -o 1`
+   `python predict-train.py -m model.h5 -o 1`
 
 3. Launch drive.py from terminal
-  * Arguments:
-  {predictor_address} ip address or hostname of computer running the predictor. If none supplied, uses localhost.
+
+  usage: drive.py [-h] [addr]
+   addr        IP address or hostname of computer running predict-train.py. If none supplied, uses localhost.
 
   * Example:
-  `python drive.py`
+   `python drive.py`
         
 4. Accelarate
-  * Set focus to GUI window
-  * press up arrow key to speed up
+  * Click on the GUI window to set focus
+  * Press up arrow key to speed up
+
 
 ## References
 
